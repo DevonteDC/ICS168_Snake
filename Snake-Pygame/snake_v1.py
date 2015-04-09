@@ -1,33 +1,54 @@
 import pygame
 
-pygame.init() #initializes pygame
+pygame.init()
+
+##VARIABLES-----------------------
 
 white = (255,255,255)
 black = (0,0,0)
 red = (255,0,0)
 
-gameDisplay = pygame.display.set_mode((800,600)) #creates a surface
-pygame.display.set_caption('Snake 168') #title
-
-# pygame.display.update() updates entire surface or parameter
-# pygame.display.flip() updates entire screen at once
+gameDisplay = pygame.display.set_mode((800,600)) 
+pygame.display.set_caption('Snake 168') 
 
 gameExit = False;
 
+lead_x = 300
+lead_y = 300
+lead_x_change = 0
+lead_y_change = 0
+
+clock = pygame.time.Clock()
+###VARIABLES------------------------
+
+
+
+###GAME LOOP------------------------
 while not gameExit:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             gameExit = True
-            
-    gameDisplay.fill(white)      #fill background with white
-    pygame.draw.rect(gameDisplay, black,[400,300,10,100]) #creates rectangles
-    pygame.draw.rect(gameDisplay, red,[400,300,10,10])
-    gameDisplay.fill(red,rect=[200,200,50,50])
 
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                lead_x_change =  -10
+            if event.key == pygame.K_RIGHT:
+                lead_x_change = 10
+          
+                
+    lead_x += lead_x_change
+   
+            
+    gameDisplay.fill(white)     
+    pygame.draw.rect(gameDisplay, black,[lead_x,lead_y,10,10])
+    
     
     pygame.display.update()
-        #print(event) shows all the events that are occuring
+    clock.tick(15)
+
+###GAME LOOP-------------------------
+        
 
 
-pygame.quit() #exits pygame
-quit() #exits python
+pygame.quit() 
+quit() 
