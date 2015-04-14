@@ -44,9 +44,9 @@ snake_head = pygame.image.load('snakehead.png')
 def text_objects(text,color):
     textSurface = font.render(text,True,color)
     return textSurface, textSurface.get_rect()
-def message_to_screen(msg,color):
+def message_to_screen(msg,color,y_displace = 0):
     textSurf, textRect = text_objects(msg,color)
-    textRect.center = (display_width / 2), (display_height / 2)
+    textRect.center = (display_width / 2), (display_height / 2) + y_displace
     gameDisplay.blit(textSurf,textRect)
     
 
@@ -93,7 +93,8 @@ def gameLoop():
         while gameOver == True:
             direction = 'right'
             gameDisplay.fill(white)
-            message_to_screen("Game over, press C to play again or Q to quit",red)
+            message_to_screen("Game over",red, -50)
+            message_to_screen("Press C to play again or Q to quit",black,50)
             pygame.display.update()
 
             for event in pygame.event.get():
