@@ -21,9 +21,9 @@ pygame.display.set_caption('Snake 168')
 
 
 clock = pygame.time.Clock()
-block_size = 15
-AppleThickness = 20
-FPS = 30
+block_size = 20
+AppleThickness = 30
+FPS = 20
 
 direction = 'right'
 
@@ -52,6 +52,38 @@ pygame.display.set_icon(icon)
 
 
 ###FUNCTIONS------------------------
+
+def pause():
+    paused = True
+
+    message_to_screen("Paused",
+                      black,
+                      -100,
+                      'large')
+    message_to_screen("Press C to continue or Q to quit.",
+                      black,
+                      25)
+
+    pygame.display.update()
+
+    while paused:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_c:
+                    paused = False
+                elif event.key == pygame.K_q:
+                    pygame.quit()
+                    quit()
+       
+        
+        clock.tick(5)
+
+def score(score):
+    text = smallfont.render("Score: " + str(score),True,black)
+    gameDisplay.blit(text,[0,0])
 
 def randAppleGen():
     randAppleX = round(random.randrange(0,display_width - AppleThickness))#/10.0) * 10.0
@@ -87,7 +119,8 @@ def snake(block_size,snakeList):
         
     gameDisplay.blit(head,(snakeList[-1][0],snakeList[-1][1]))
     for XnY in snakeList[:-1]:
-        pygame.draw.rect(gameDisplay, green,[XnY[0],XnY[1],block_size,block_size])
+        pygame.draw.rect(gameDisplay, black,[XnY[0],XnY[1],block_size,block_size])
+        pygame.draw.rect(gameDisplay,green,[XnY[0],XnY[1],block_size - 1,block_size - 1])
 
 def game_intro():
 
@@ -99,7 +132,7 @@ def game_intro():
                 pygame.quit()
                 quit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_p:
+                if event.key == pygame.K_c:
                     intro = False
                 if event.key == pygame.K_q:
                     pygame.quit()
@@ -124,7 +157,7 @@ def game_intro():
                           black,
                           50)
 
-        message_to_screen("Press P to play or Q to quit",
+        message_to_screen("Press C to play, P to pause, or Q to quit",
                           black,
                           180)
 
@@ -154,24 +187,25 @@ def gameLoop():
     snakeLength = 1
 
     randAppleX,randAppleY = randAppleGen()
-    #randAppleX = round(random.randrange(0,display_width - AppleThickness))#/10.0) * 10.0
-    #randAppleY = round(random.randrange(0,display_height - AppleThickness))#/10.0) * 10.0
+    
     
     while gameExit == False:
 
-        while gameOver == True:
-            direction = 'right'
-            gameDisplay.fill(white)
+        if gameOver == True:
             message_to_screen("Game over",
                               red,
                               -50,
                               size = 'large')
             
-            message_to_screen("Press P to play again or Q to quit",
+            message_to_screen("Press C to play again or Q to quit",
                               black,
                               50,
                               size = 'medium')
             pygame.display.update()
+            
+
+        while gameOver == True:
+            direction = 'right'
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -181,7 +215,7 @@ def gameLoop():
                     if event.key == pygame.K_q:
                         gameExit = True
                         gameOver = False
-                    elif event.key == pygame.K_p:
+                    elif event.key == pygame.K_c:
                         gameLoop()
                         
         for event in pygame.event.get():
@@ -205,6 +239,9 @@ def gameLoop():
                     lead_y_change = block_size
                     lead_x_change = 0
                     direction = 'down'
+
+                elif event.key ==  pygame.K_p:
+                    pause()
                     
         if lead_x >= display_width or lead_x < 0 or lead_y >= display_height or lead_y < 0:
             gameOver = True
@@ -235,6 +272,7 @@ def gameLoop():
                 gameOver = True
             
         snake(block_size,snakeList)
+        score(snakeLength - 1)
         
         pygame.display.update()
 
