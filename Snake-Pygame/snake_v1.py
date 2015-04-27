@@ -1,6 +1,7 @@
 import pygame
 import time
 import random
+import inputbox
 
 pygame.init()
 
@@ -15,7 +16,7 @@ light_green = (0,255,0)
 yellow = (200,200,0)
 light_yellow = (255,255,0)
 
-
+username =""
 display_width = 800
 display_height = 600
 
@@ -90,6 +91,11 @@ def score(score):
     text = smallfont.render("Score: " + str(score),True,black)
     gameDisplay.blit(text,[0,0])
 
+def displayUsername():
+    global username
+    text = smallfont.render("Username: " + username,True,black)
+    gameDisplay.blit(text,[200,0])
+
 def randAppleGen():
     randAppleX = round(random.randrange(0,display_width - AppleThickness))#/10.0) * 10.0
     randAppleY = round(random.randrange(0,display_height - AppleThickness))#/10.0) * 10.0
@@ -115,6 +121,46 @@ def message_to_screen(msg,color,y_displace = 0, size = 'small'):
     textRect.center = (display_width / 2), (display_height / 2) + y_displace
     gameDisplay.blit(textSurf,textRect)
 
+def game_controls():
+    gcont = True
+
+    while gcont:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            
+
+        
+        gameDisplay.fill(white)
+        message_to_screen("Controls",
+                          green,
+                          -100,
+                          'large')
+
+        message_to_screen("WASD Movement",
+                          black,
+                          -30)
+        
+        message_to_screen("Pause: P",
+                          black,
+                          10)
+        
+        
+
+
+        
+
+        button("Play",150,500,100,50,green,light_green, action = 'play')
+        #button("Main",350,500,100,50,yellow,light_yellow,action='main')
+        button("Quit",550,500,100,50,red,light_red,action='quit')
+
+        
+
+        pygame.display.update()
+        clock.tick(15)
+    
+
 def button(text,x,y,width,height,inactive_color,active_color,action = None):
     cur = pygame.mouse.get_pos()
     click = pygame.mouse.get_pressed()
@@ -122,7 +168,19 @@ def button(text,x,y,width,height,inactive_color,active_color,action = None):
 
     if x + width > cur[0] > x and y + height > cur[1] > y:
         pygame.draw.rect(gameDisplay,active_color,(x,y,width,height))
-        if click[0] == 1:
+        if click[0] == 1 and action != None:
+            if action == 'quit':
+                pygame.quit()
+                quit()
+            if action == 'controls':
+                game_controls()
+                
+            if action == 'play':
+                UserPass()
+                
+
+            
+            
             
     else:
         pygame.draw.rect(gameDisplay,inactive_color,(x,y,width,height))
@@ -130,7 +188,34 @@ def button(text,x,y,width,height,inactive_color,active_color,action = None):
     text_to_button(text,black,x,y,width,height)
         
     
-    
+
+def UserPass():
+    global username
+    userp = True
+
+    while userp:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            
+
+        
+        gameDisplay.fill(white)
+      
+        
+        username = inputbox.ask(gameDisplay,"UserName")
+        password = inputbox.ask(gameDisplay,"Password")
+        gameLoop()
+
+
+        
+
+
+        
+
+        pygame.display.update()
+        clock.tick(15)
 
 def snake(block_size,snakeList):
 
@@ -160,12 +245,17 @@ def game_intro():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_c:
                     intro = False
+                    
                 if event.key == pygame.K_q:
                     pygame.quit()
                     quit()
 
         
         gameDisplay.fill(white)
+        
+
+        
+        
         message_to_screen("Welcome to Snake",
                           green,
                           -100,
@@ -304,6 +394,8 @@ def gameLoop():
             
         snake(block_size,snakeList)
         score(snakeLength - 1)
+        displayUsername()
+        
         
         pygame.display.update()
 
@@ -324,7 +416,7 @@ def gameLoop():
 
 ###MAIN------------------------------
 game_intro()        
-gameLoop()
+
 ###---------------------------------- 
 
 
