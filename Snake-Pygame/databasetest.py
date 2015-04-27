@@ -2,6 +2,7 @@ import sqlite3
 
 
 def Main():
+    a = 'Cat'
     try:
         con = sqlite3.connect('test.db')
         cur = con.cursor()
@@ -19,11 +20,12 @@ def Main():
         cur.executemany("INSERT INTO Pets VALUES(?,?,?)",pets)
         con.commit()
 
-        cur.execute("SELECT * FROM Pets")
+        cur.execute("SELECT * FROM Pets WHERE Name = '{}'".format(a))
 
-        data = cur.fetchall()
-        for row in data:
-            print(row)
+        data = cur.fetchone()
+        print(data[1])
+        #for row in data:
+            #print(row)
 
         
     except sqlite3.Error as e:

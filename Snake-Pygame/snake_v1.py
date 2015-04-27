@@ -2,6 +2,7 @@ import pygame
 import time
 import random
 import inputbox
+import sqlite3
 
 pygame.init()
 
@@ -50,6 +51,14 @@ apple = pygame.image.load('apple.png')
 icon = pygame.image.load('apple.png')
 pygame.display.set_icon(icon)
 #---ICON---
+
+#---DATABASE VARIABLES---
+con = sqlite3.connect('snaketest.db')
+cur = con.cursor()
+cur.execute("CREATE TABLE IF NOT EXISTS Login (Username TEXT, Password TEXT)")
+con.commit()
+
+#---DATABASE VARIABLES---
 
 
 
@@ -169,14 +178,17 @@ def button(text,x,y,width,height,inactive_color,active_color,action = None):
     if x + width > cur[0] > x and y + height > cur[1] > y:
         pygame.draw.rect(gameDisplay,active_color,(x,y,width,height))
         if click[0] == 1 and action != None:
-            if action == 'quit':
+            if action == 'Quit':
                 pygame.quit()
                 quit()
-            if action == 'controls':
+            if action == 'Controls':
                 game_controls()
                 
-            if action == 'play':
+            if action == 'Play' or action == 'Redo':
                 UserPass()
+                
+
+            
                 
 
             
@@ -186,11 +198,36 @@ def button(text,x,y,width,height,inactive_color,active_color,action = None):
         pygame.draw.rect(gameDisplay,inactive_color,(x,y,width,height))
 
     text_to_button(text,black,x,y,width,height)
+
+
+def InvalidPass():
+    ipass = True
+
+    while ipass:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            
+
+        
+        gameDisplay.fill(white)
+
+        message_to_screen("Invalid Password, Redo",
+                          red,
+                          -100,
+                          'medium')
+        button("Redo",150,500,100,50,green,light_green, action = 'Redo')
+
+        pygame.display.update()
+        clock.tick(15)
         
     
 
 def UserPass():
     global username
+    global cur
+    global con
     userp = True
 
     while userp:
@@ -206,7 +243,24 @@ def UserPass():
         
         username = inputbox.ask(gameDisplay,"UserName")
         password = inputbox.ask(gameDisplay,"Password")
-        gameLoop()
+        cur.execute("SELECT COUNT(*) FROM Login WHERE Username = '{}'".format(username))
+        data = cur.fetchone()
+        if data[0] == 0:
+            cur.execute("INSERT INTO Login VALUES('{}','{}')".format(username,password))
+            con.commit()
+            gameLoop()
+        elif data[0] == 1:
+            cur.execute("SELECT * FROM Login WHERE Username = '{}'".format(username))
+            data = cur.fetchone()
+            if data[1] == password:
+                gameLoop()
+            else:
+                InvalidPass()
+                
+                
+            
+        
+        
 
 
         
@@ -236,6 +290,8 @@ def snake(block_size,snakeList):
 def game_intro():
 
     intro = True
+
+    
 
     while intro:
         for event in pygame.event.get():
@@ -278,9 +334,9 @@ def game_intro():
                           #180)
         
 
-        button("play",150,500,100,50,green,light_green, action = 'play')
-        button("controls",350,500,100,50,yellow,light_yellow,action='controls')
-        button("quit",550,500,100,50,red,light_red,action='quit')
+        button("play",150,500,100,50,green,light_green, action = 'Play')
+        button("controls",350,500,100,50,yellow,light_yellow,action='Controls')
+        button("quit",550,500,100,50,red,light_red,action='Quit')
 
         
 
