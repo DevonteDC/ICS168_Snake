@@ -23,13 +23,14 @@ print("Server Started")
 
 
 ##DATABASE VARIABLES----
+
 while True:
     data,addr = s.recvfrom(1024)
     data = data.decode()
     data = data.split(":")
     if data[0] == "Login":
         username = data[1]
-        password = data[2]
+        password = str(hash(data[2]))
         cur.execute("SELECT COUNT(*) FROM Login WHERE Username = '{}'".format(username))
         info = cur.fetchone()
         if info[0] == 0:

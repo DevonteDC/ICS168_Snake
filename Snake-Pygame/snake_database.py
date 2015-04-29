@@ -4,6 +4,8 @@ import sqlite3
 con = sqlite3.connect('snaketest.db')
 cur = con.cursor()
 
+#cur.execute('DROP TABLE Login')
+#con.commit()
 cur.execute("SELECT * FROM Login")
 data = cur.fetchall()
 
