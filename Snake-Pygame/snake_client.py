@@ -38,6 +38,8 @@ pygame.display.set_caption('Snake 168')
 
 
 
+
+
 clock = pygame.time.Clock()
 block_size = 20
 AppleThickness = 30
@@ -56,6 +58,8 @@ largefont = pygame.font.SysFont("comicsansms",80)
 ###IMAGES---------------------------
 snake_head = pygame.image.load('snakehead.png')
 apple = pygame.image.load('apple.png')
+background = pygame.image.load('SnakeBackground.png')
+titleScreen = pygame.image.load('SnakeTitle.png')
 ###IMAGES---------------------------
 
 #---ICON---
@@ -154,7 +158,7 @@ def game_controls():
             
 
         
-        gameDisplay.fill(white)
+        gameDisplay.blit(background,(0,0))
         message_to_screen("Controls",
                           green,
                           -100,
@@ -228,7 +232,7 @@ def InvalidPass():
             
 
         
-        gameDisplay.fill(white)
+        gameDisplay.blit(background,(0,0))
 
         message_to_screen("Invalid Password, Redo",
                           red,
@@ -259,7 +263,7 @@ def UserPass():
             
 
         
-        gameDisplay.fill(white)
+        gameDisplay.blit(background,(0,0))
       
         ##SERVER LOGIN##
         username = inputbox.ask(gameDisplay,"UserName")
@@ -327,37 +331,19 @@ def game_intro():
                     pygame.quit()
                     quit()
 
-        
-        gameDisplay.fill(white)
+        gameDisplay.blit(titleScreen,(0,0))
+        #gameDisplay.fill(white)
         
 
-        
-        
-        message_to_screen("Welcome to Snake",
-                          green,
-                          -100,
-                          'large')
-
-        message_to_screen("The objective of the game is to eat the red apples",
-                          black,
-                          -30)
-        
-        message_to_screen("The more apples you eat, the longer you get",
-                          black,
-                          10)
-        
-        message_to_screen("If you run into yourself, or the edges, you die!",
-                          black,
-                          50)
 
         #message_to_screen("Press C to play, P to pause, or Q to quit",
                           #black,
                           #180)
         
 
-        button("play",150,500,100,50,green,light_green, action = 'Play')
-        button("controls",350,500,100,50,yellow,light_yellow,action='Controls')
-        button("quit",550,500,100,50,red,light_red,action='Quit')
+        button("play",500,120,100,50,green,light_green, action = 'Play')
+        button("controls",500,190,100,50,yellow,light_yellow,action='Controls')
+        button("quit",500,260,100,50,red,light_red,action='Quit')
 
         
 
@@ -451,7 +437,7 @@ def gameLoop():
         lead_y += lead_y_change
        
                 
-        gameDisplay.fill(white)
+        gameDisplay.blit(background,(0,0))
 
         
         #pygame.draw.rect(gameDisplay,red,[randAppleX,randAppleY,AppleThickness,AppleThickness])
