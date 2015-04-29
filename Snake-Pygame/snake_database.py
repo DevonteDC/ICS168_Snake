@@ -6,7 +6,8 @@ cur = con.cursor()
 
 cur.execute('DROP TABLE Login')
 con.commit()
-cur.execute("SELECT * FROM Login")
+print("Database deleted")
+#cur.execute("SELECT * FROM Login")
 data = cur.fetchall()
 
 for row in data:
