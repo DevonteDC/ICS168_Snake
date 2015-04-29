@@ -5,6 +5,7 @@ import inputbox
 import sqlite3
 import socket
 
+
 pygame.init()
 
 host = '127.0.0.1'
@@ -61,6 +62,11 @@ apple = pygame.image.load('apple.png')
 background = pygame.image.load('SnakeBackground.png')
 titleScreen = pygame.image.load('SnakeTitle.png')
 ###IMAGES---------------------------
+
+#SOUND----------
+titleMusic = pygame.mixer.Sound('pac.wav')
+eatSound = pygame.mixer.Sound('eat.wav')
+#SOUND----------
 
 #---ICON---
 icon = pygame.image.load('apple.png')
@@ -188,6 +194,7 @@ def game_controls():
     
 
 def button(text,x,y,width,height,inactive_color,active_color,action = None):
+    #global titleMusic
     cur = pygame.mouse.get_pos()
     click = pygame.mouse.get_pressed()
     
@@ -204,6 +211,7 @@ def button(text,x,y,width,height,inactive_color,active_color,action = None):
                 game_controls()
                 
             if action == 'Play' or action == 'Redo':
+                titleMusic.stop()
                 UserPass()
                 
 
@@ -315,8 +323,9 @@ def game_intro():
     intro = True
 
     
-
+    titleMusic.play()
     while intro:
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 
@@ -349,6 +358,7 @@ def game_intro():
 
         pygame.display.update()
         clock.tick(15)
+    
 ###FUNCTIONS------------------------
 
 
@@ -359,6 +369,8 @@ def game_intro():
 
 ###GAME LOOP------------------------
 def gameLoop():
+
+   
     global direction
     gameExit = False
     gameOver = False
@@ -466,8 +478,10 @@ def gameLoop():
 
         if lead_x > randAppleX and lead_x < randAppleX + AppleThickness or lead_x + block_size > randAppleX and lead_x + block_size < randAppleX + AppleThickness:
             if lead_y > randAppleY and lead_y < randAppleY + AppleThickness or lead_y + block_size > randAppleY and lead_y + block_size < randAppleY + AppleThickness:
+                eatSound.play()
                 randAppleX,randAppleY = randAppleGen()
                 snakeLength += 1
+                
             
             
         clock.tick(FPS)
