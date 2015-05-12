@@ -4,14 +4,18 @@ import random
 import inputbox
 import sqlite3
 import socket
+import ipgetter
+import hashlib
+local = "127.0.0.1"
+external = str(ipgetter.myip())
 
 
 pygame.init()
 
-host = '127.0.0.1'
-port = 5001
+host = local
+port = 10001
 
-server = ('127.0.0.1',5000)
+server = (local,20000)
 s = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 s.bind((host,port))
 
@@ -29,7 +33,9 @@ light_green = (0,255,0)
 yellow = (200,200,0)
 light_yellow = (255,255,0)
 
+###USERS
 username =""
+###USERS
 display_width = 800
 display_height = 600
 
@@ -276,6 +282,8 @@ def UserPass():
         ##SERVER LOGIN##
         username = inputbox.ask(gameDisplay,"UserName")
         password = inputbox.ask(gameDisplay,"Password")
+        password = hashlib.md5(password.encode()).hexdigest()
+        print("PASSWORD BEFORE SENDING: ",password," TYPE: ",type(password))
         s.sendto("Login:{}:{}".format(username,password).encode(),server)
         while noStartGame == True:
             data, addr = s.recvfrom(1024)
@@ -370,12 +378,14 @@ def game_intro():
 ###GAME LOOP------------------------
 def gameLoop():
 
-   
+    
     global direction
     gameExit = False
     gameOver = False
     lead_x = display_width/2
     lead_y = display_height/2
+   
+        
     lead_x_change = 10
     lead_y_change = 0
 
@@ -386,6 +396,10 @@ def gameLoop():
     
     
     while gameExit == False:
+
+    
+
+        
 
         if gameOver == True:
             message_to_screen("Game over",
