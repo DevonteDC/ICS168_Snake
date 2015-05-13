@@ -19,9 +19,6 @@ s.bind((host,port))
 num_users = 0
 
 
-
-
-
 ##DATABASE VARIABLES----
 con = sqlite3.connect('snaketest.db')
 cur = con.cursor()
@@ -29,15 +26,11 @@ cur.execute("CREATE TABLE IF NOT EXISTS Login (Username TEXT, Password TEXT)")
 con.commit()
 print("Server Started")
 
-addresses = set()
-
 
 ##DATABASE VARIABLES----
 
 while True:
     data,addr = s.recvfrom(1024)
-    addresses.add(addr)
-    
     data = data.decode()
     data = data.split(":")
     if data[0] == "Login":
@@ -62,19 +55,13 @@ while True:
             else:
                 print("Invalid Password for User: {}".format(username))
                 s.sendto("Invalidpass:?:?".encode(),addr)
+
     if data[0] == "User":
-        print("DATA EQUALED USER!!!!!!")
         num_users += 1
         if num_users == 1:
             s.sendto("User1:?:?".encode(),addr)
-        if num_users == 2:
+        else:
             s.sendto("User2:?:?".encode(),addr)
-
-    
-        
-        
-
-   
 
         
     

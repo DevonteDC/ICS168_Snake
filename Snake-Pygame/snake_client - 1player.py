@@ -13,7 +13,7 @@ external = str(ipgetter.myip())
 pygame.init()
 
 host = local
-port = 10000
+port = 10005
 
 server = (local,20000)
 s = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
@@ -21,7 +21,6 @@ s.bind((host,port))
 
 user1 = False
 user2 = False
-
 
 
 
@@ -57,7 +56,6 @@ AppleThickness = 30
 FPS = 20
 
 direction = 'right'
-direction2 = 'left'
 
 smallfont = pygame.font.SysFont("comicsansms",25)
 medfont = pygame.font.SysFont("comicsansms",50)
@@ -195,7 +193,7 @@ def game_controls():
         
 
         button("Play",150,500,100,50,green,light_green, action = 'Play')
-        
+        #button("Main",350,500,100,50,yellow,light_yellow,action='main')
         button("Quit",550,500,100,50,red,light_red,action='Quit')
 
         
@@ -205,7 +203,7 @@ def game_controls():
     
 
 def button(text,x,y,width,height,inactive_color,active_color,action = None):
-    
+    #global titleMusic
     cur = pygame.mouse.get_pos()
     click = pygame.mouse.get_pressed()
     
@@ -224,10 +222,6 @@ def button(text,x,y,width,height,inactive_color,active_color,action = None):
             if action == 'Play' or action == 'Redo':
                 titleMusic.stop()
                 UserPass()
-
-            if action == 'Begin':
-                gameLoop()
-                
                 
 
             
@@ -269,8 +263,6 @@ def InvalidPass():
     
 
 def UserPass():
-    global user1
-    global user2
     global username
     global cur
     global con
@@ -302,22 +294,9 @@ def UserPass():
             data = data.split(":")
             if data[0] == "Gameloop":
                 s.sendto("User:?:?".encode(),server)
-                data, addr = s.recvfrom(1024)
-                data = data.decode()
-                data = data.split(":")
-                if data[0] == "User1":
-                    print("USER!!!")
-                    user1 = True
-                    waitingRoom()
-                if data[0] == "User2":
-                    user2 = True
-                    waitingRoom()
-            
-            if data[0] == "Invalidpass":
+                gameLoop()
+            elif data[0] == "Invalidpass":
                 InvalidPass()
-            
-            
-                
         ##SERVER LOGIN##
         
                 
@@ -335,15 +314,15 @@ def UserPass():
         pygame.display.update()
         clock.tick(15)
 
-def snake(block_size,snakeList,direc):
+def snake(block_size,snakeList):
 
-    if direc == 'right':
+    if direction == 'right':
         head = pygame.transform.rotate(snake_head,270)
-    if direc == 'left':
+    if direction == 'left':
         head = pygame.transform.rotate(snake_head,90)
-    if direc == 'up':
+    if direction == 'up':
         head = snake_head
-    if direc == 'down':
+    if direction == 'down':
         head = pygame.transform.rotate(snake_head,180)
         
     gameDisplay.blit(head,(snakeList[-1][0],snakeList[-1][1]))
@@ -366,7 +345,8 @@ def game_intro():
                 pygame.quit()
                 quit()
             if event.type == pygame.KEYDOWN:
-                
+                if event.key == pygame.K_c:
+                    intro = False
                     
                 if event.key == pygame.K_q:
                     pygame.quit()
@@ -390,49 +370,6 @@ def game_intro():
 
         pygame.display.update()
         clock.tick(15)
-
-
-def waitingRoom():
-    waiting = True
-    
-    
-    
-    lobby = [[username,-100]]
-    
-
-    
-    while waiting:
-        
-        
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                
-                s.close()
-                pygame.quit()
-                quit()
-            if event.type == pygame.KEYDOWN:
-               
-                    
-                if event.key == pygame.K_q:
-                    pygame.quit()
-                    quit()
-            
-
-        gameDisplay.blit(background,(0,0))
-
-       
-             
-            
-
-        for player in lobby:
-            message_to_screen("Waiting for " + player[0],red,player[1],'medium')
-            
-            #pygame.display.update()
-        button("Ready",150,500,100,50,red,light_red,action = "Begin")
-        
-        
-        pygame.display.update()
-        clock.tick(15)
     
 ###FUNCTIONS------------------------
 
@@ -446,37 +383,47 @@ def waitingRoom():
 def gameLoop():
     global user1
     global user2
+    
     global direction
-    global direction2
     gameExit = False
     gameOver = False
-    lead_x = 100
-    lead_y = 100
-
-    lead_x2 = display_width - 100
-    lead_y2 = 100
-
-       
-    lead_x_change = 0
+    lead_x = display_width/2
+    lead_y = display_height/2
+#second snake
+    lead_x2 = display_width/2
+    lead_y2 = display_height/2
+#------------------
+   
+        
+    lead_x_change = 10
     lead_y_change = 0
-
-    lead_x2_change = 0
+#second snake
+    lead_x2_change = 10
     lead_y2_change = 0
-
+#------------------
 
     snakeList = []
     snakeLength = 1
-
+#second snake
     snakeList2 = []
     snakeLength2 = 1
-
+#------------------
 
     randAppleX,randAppleY = randAppleGen()
     
     
     while gameExit == False:
-        
-        
+
+        data,addr = s.recvfrom(1024)
+        data = data.decode()
+        data = data.split(":")
+        if data[0] == "User1":
+            user1 = True
+        elif data[0] == "User2":
+            user2 = True
+            
+
+    
 
         
 
@@ -495,7 +442,6 @@ def gameLoop():
 
         while gameOver == True:
             direction = 'right'
-            direction2 = 'left'
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -509,81 +455,72 @@ def gameLoop():
                         gameLoop()
                         
         for event in pygame.event.get():
-            
-                
             if event.type == pygame.QUIT:
                 gameExit = True
 
             if event.type == pygame.KEYDOWN:
-                if user1:
-                    if event.key == pygame.K_LEFT and direction != 'right':
+                if event.key == pygame.K_LEFT and direction != 'right':
+                    if user1:
                         lead_x_change =  -block_size
                         lead_y_change = 0
                         direction = 'left'
-                            
+                    elif user2:
+                        lead_x2_change =  -block_size
+                        lead_y2_change = 0
+                        direction = 'left'
                         
-                    elif event.key == pygame.K_RIGHT and direction != 'left':
+                elif event.key == pygame.K_RIGHT and direction != 'left':
+                    if user1:
                         lead_x_change = block_size
                         lead_y_change = 0
                         direction = 'right'
-                    
-                    elif event.key == pygame.K_UP and direction !='down':
+                    elif user2:
+                        lead_x2_change = block_size
+                        lead_y2_change = 0
+                        direction = 'right'
+                elif event.key == pygame.K_UP and direction !='down':
+                    if user1:
                         lead_y_change =  -block_size
                         lead_x_change = 0
                         direction = 'up'
-                   
-                    elif event.key == pygame.K_DOWN and direction !='up':
+                    elif user2:
+                        lead_y_change =  -block_size
+                        lead_x_change = 0
+                        direction = 'up'
+                elif event.key == pygame.K_DOWN and direction !='up':
+                    if user1:
                         lead_y_change = block_size
                         lead_x_change = 0
                         direction = 'down'
-                    elif event.key ==  pygame.K_p:
-                        pause()
-            
-                        
-                            
-                        
-                if user2:
-                    if event.key == pygame.K_LEFT and direction2 != 'right':
-                            lead_x2_change =  -block_size
-                            lead_y2_change = 0
-                            direction2 = 'left'
-                        
-                    elif event.key == pygame.K_RIGHT and direction2 != 'left':
-                        lead_x2_change = block_size
-                        lead_y2_change = 0
-                        direction2 = 'right'
-                    
-                    elif event.key == pygame.K_UP and direction2 !='down':
-                        lead_y2_change =  -block_size
-                        lead_x2_change = 0
-                        direction2 = 'up'
-                   
-                    elif event.key == pygame.K_DOWN and direction2 !='up':
-                        lead_y2_change = block_size
-                        lead_x2_change = 0
-                        direction2 = 'down'
-                    
-                    elif event.key ==  pygame.K_p:
-                        pause()
-            
+                    elif user2:
+                        lead_y_change =  -block_size
+                        lead_x_change = 0
+                        direction = 'up'
+
+                elif event.key ==  pygame.K_p:
+                    pause()
+        if user1:
+            if lead_x >= display_width or lead_x < 0 or lead_y >= display_height or lead_y < 0:
+                gameOver = True
+
+            lead_x += lead_x_change
+            lead_y += lead_y_change
+
+
                 
-        
-        
-        
-        
-        if lead_x >= display_width or lead_x < 0 or lead_y >= display_height or lead_y < 0:
-            gameOver = True
+        elif user2:
+            if lead_x2 >= display_width or lead_x2 < 0 or lead_y2 >= display_height or lead_y2 < 0:
+                gameOver = True
 
-        if lead_x2 >= display_width or lead_x2 < 0 or lead_y2 >= display_height or lead_y2 < 0:
-            gameOver = True
-
-        lead_x += lead_x_change
-        lead_y += lead_y_change
-
-        lead_x2 += lead_x2_change
-        lead_y2 += lead_y2_change
+            lead_x2 += lead_x2_change
+            lead_y2 += lead_y2_change
+            
             
            
+              
+                    
+        
+       
                 
         gameDisplay.blit(background,(0,0))
 
@@ -591,65 +528,68 @@ def gameLoop():
         #pygame.draw.rect(gameDisplay,red,[randAppleX,randAppleY,AppleThickness,AppleThickness])
         gameDisplay.blit(apple,(randAppleX,randAppleY))
 
-        
-        snakeHead = []
-        snakeHead.append(lead_x)
-        snakeHead.append(lead_y)
-        snakeList.append(snakeHead)
-
-        snakeHead2 = []
-        snakeHead2.append(lead_x2)
-        snakeHead2.append(lead_y2)
-        snakeList2.append(snakeHead2)
-
-        if len(snakeList) > snakeLength:
-            del snakeList[0]
-
-        if len(snakeList2) > snakeLength2:
-            del snakeList2[0]
-        
-        for eachSegment in snakeList[:-1]:
-            if eachSegment == snakeHead:
-                gameOver = True
-
-        for eachSegment in snakeList2[:-1]:
-            if eachSegment == snakeHead2:
-                gameOver = True
-            
-        snake(block_size,snakeList,direction)
-        snake(block_size,snakeList2,direction2)
         if user1:
-            score(snakeLength - 1)
-        if user2:
-            score(snakeLength2 - 1)
-        displayUsername()
+            snakeHead = []
+            snakeHead.append(lead_x)
+            snakeHead.append(lead_y)
+            snakeList.append(snakeHead)
 
+            if len(snakeList) > snakeLength:
+                del snakeList[0]
         
-        
-        
-        
-        pygame.display.update()
-
-
-
-        if lead_x > randAppleX and lead_x < randAppleX + AppleThickness or lead_x + block_size > randAppleX and lead_x + block_size < randAppleX + AppleThickness:
-            if lead_y > randAppleY and lead_y < randAppleY + AppleThickness or lead_y + block_size > randAppleY and lead_y + block_size < randAppleY + AppleThickness:
-                eatSound.play()
-                randAppleX,randAppleY = randAppleGen()
-                snakeLength += 1
-
-        if lead_x2 > randAppleX and lead_x2 < randAppleX + AppleThickness or lead_x2 + block_size > randAppleX and lead_x2 + block_size < randAppleX + AppleThickness:
-            if lead_y2 > randAppleY and lead_y2 < randAppleY + AppleThickness or lead_y2 + block_size > randAppleY and lead_y2 + block_size < randAppleY + AppleThickness:
-                eatSound.play()
-                randAppleX,randAppleY = randAppleGen()
-                snakeLength2 += 1
-
-        
-                
-        
+            for eachSegment in snakeList[:-1]:
+                if eachSegment == snakeHead:
+                    gameOver = True
             
-        clock.tick(FPS)
+            snake(block_size,snakeList)
+            score(snakeLength - 1)
+            displayUsername()
         
+        
+            pygame.display.update()
+
+
+
+            if lead_x > randAppleX and lead_x < randAppleX + AppleThickness or lead_x + block_size > randAppleX and lead_x + block_size < randAppleX + AppleThickness:
+                if lead_y > randAppleY and lead_y < randAppleY + AppleThickness or lead_y + block_size > randAppleY and lead_y + block_size < randAppleY + AppleThickness:
+                    eatSound.play()
+                    randAppleX,randAppleY = randAppleGen()
+                    snakeLength += 1
+                
+            
+            
+            clock.tick(FPS)
+        if user2:
+            snakeHead2 = []
+            snakeHead2.append(lead_x2)
+            snakeHead2.append(lead_y2)
+            snakeList2.append(snakeHead2)
+
+            if len(snakeList2) > snakeLength2:
+                del snakeList2[0]
+        
+            for eachSegment in snakeList2[:-1]:
+                if eachSegment == snakeHead2:
+                    gameOver = True
+            
+            snake(block_size,snakeList2)
+            score(snakeLength2 - 1)
+            displayUsername()
+        
+        
+            pygame.display.update()
+
+
+
+            if lead_x2 > randAppleX and lead_x2 < randAppleX + AppleThickness or lead_x2 + block_size > randAppleX and lead_x2 + block_size < randAppleX + AppleThickness:
+                if lead_y2 > randAppleY and lead_y2 < randAppleY + AppleThickness or lead_y2 + block_size > randAppleY and lead_y2 + block_size < randAppleY + AppleThickness:
+                    eatSound.play()
+                    randAppleX,randAppleY = randAppleGen()
+                    snakeLength += 1
+                
+            
+            
+            clock.tick(FPS)
     s.close()
     pygame.quit() 
     quit()
