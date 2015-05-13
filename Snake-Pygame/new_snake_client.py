@@ -36,12 +36,14 @@ class SnakeGame():
         self.shutdown = False
 
         self.host = '127.0.0.1'
-        self.port = 10003
+        self.port = 10012
 
         self.server = ('127.0.0.1',5000)
         self.s = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
         self.s.bind((self.host,self.port))
         self.s.setblocking(0)
+        self.rt = threading.Thread(target = self.receiving, args = ('RecvThread',self.s))
+        self.rt.start()
 
         
         self.display_width = 800
@@ -59,6 +61,24 @@ class SnakeGame():
         self.FPS = 20
 
         self.direction = 'right'
+        self.direction2 = 'left'
+
+        self.lead_x = 0
+        self.lead_x_change = 0
+        self.lead_y = 0
+        self.lead_y_change = 0
+        self.lead_x2 = 0
+        self.lead_y2 = 0
+        self.lead_x2_change = 0
+        self.lead_y2_change = 0
+        self.snakeList = []
+        self.snakeList2 = []
+        self.snakeHead = []
+        self.snakeHead2 = []
+        self.snakeLength = 1
+        self.snakeLength2 = 1
+        self.randAppleX = 0
+        self.randAppleY = 0
 
         self.smallfont = pygame.font.SysFont("comicsansms",25)
         self.medfont = pygame.font.SysFont("comicsansms",50)
@@ -72,7 +92,8 @@ class SnakeGame():
         self.light_green = (0,255,0)
         self.yellow = (200,200,0)
         self.light_yellow = (255,255,0)
-        self.user1 = True
+        self.user1 = False
+        self.user2 = False
 
         self.initGraphics()
 
@@ -85,8 +106,54 @@ class SnakeGame():
                 while True:
                     data, addr = sock.recvfrom(1024)
                     data = data.decode()
-                    if data == "a":
+                    data = data.split(":")
+                    if data[0] == "a":
                         print("WE GOT AN A")
+                    if data[0] == "play":
+                        print("We Are Playing")
+                    if data[0] == "1User":
+                        print("I AM USER 1")
+                        self.user1 = True
+                    if data[0] == "2User":
+                        print("I AM USER 2")
+                        self.user2 = True
+                    if data[0] == "User1":
+                        if data[1] == "Left":
+                            self.lead_x_change =  -self.block_size
+                            self.lead_y_change = 0
+                            self.direction = 'left'
+                        if data[1] == "Right":
+                            self.lead_x_change = self.block_size
+                            self.lead_y_change = 0
+                            self.direction = 'right'
+                        if data[1] == "Up":
+                            self.lead_y_change =  -self.block_size
+                            self.lead_x_change = 0
+                            self.direction = 'up'
+                        if data[1] == "Down":
+                            self.lead_y_change = self.block_size
+                            self.lead_x_change = 0
+                            self.direction = 'down'
+                            
+                    if data[0] == "User2":
+                        if data[1] == "Left":
+                            self.lead_x2_change =  -self.block_size
+                            self.lead_y2_change = 0
+                            self.direction2 = 'left'
+                        if data[1] == "Right":
+                            self.lead_x2_change = self.block_size
+                            self.lead_y2_change = 0
+                            self.direction2 = 'right'
+                        if data[1] == "Up":
+                            self.lead_y2_change =  -self.block_size
+                            self.lead_x2_change = 0
+                            self.direction2 = 'up'
+                        if data[1] == "Down":
+                            self.lead_y2_change = self.block_size
+                            self.lead_x2_change = 0
+                            self.direction2 = 'down'
+                    
+                            
                     
             except:
                 pass
@@ -212,6 +279,9 @@ class SnakeGame():
                     self.game_controls()
                     
                 if action == 'Play' or action == 'Redo':
+                    self.s.sendto("play:?:?".encode(),self.server)
+                    self.tLock.acquire()
+                    self.tLock.release()
                     self.titleMusic.stop()
                     self.UserPass()
 
@@ -279,18 +349,15 @@ class SnakeGame():
             
             self.gameDisplay.blit(self.background,(0,0))
 
-            rt = threading.Thread(target = self.receiving, args = ('RecvThread',self.s))
-            rt.start()
+            
           
             ##SERVER LOGIN##
             self.username = inputbox.ask(self.gameDisplay,"UserName")
             password = inputbox.ask(self.gameDisplay,"Password")
 
-            self.s.sendto("1".encode(),self.server)
-            self.tLock.acquire()
-            self.tLock.release()
             
-            self.s.sendto(self.username.encode(),self.server)
+            
+            self.s.sendto("User:?:?".encode(),self.server)
             self.tLock.acquire()
             self.tLock.release()
             time.sleep(0.2)
@@ -451,28 +518,28 @@ class SnakeGame():
         #global direction2
         gameExit = False
         gameOver = False
-        lead_x = 100
-        lead_y = 100
+        self.lead_x = 100
+        self.lead_y = 100
 
-        #lead_x2 = display_width - 100
-        #lead_y2 = 100
+        self.lead_x2 = self.display_width - 100
+        self.lead_y2 = 100
 
            
-        lead_x_change = 0
-        lead_y_change = 0
+        self.lead_x_change = 0
+        self.lead_y_change = 0
 
-        #lead_x2_change = 0
-        #lead_y2_change = 0
-
-
-        snakeList = []
-        snakeLength = 1
-
-        #snakeList2 = []
-        #snakeLength2 = 1
+        self.lead_x2_change = 0
+        self.lead_y2_change = 0
 
 
-        randAppleX,randAppleY = self.randAppleGen()
+        self.snakeList = []
+        self.snakeLength = 1
+
+        self.snakeList2 = []
+        self.snakeLength2 = 1
+
+
+        self.randAppleX,self.randAppleY = self.randAppleGen()
         
         
         while gameExit == False:
@@ -496,7 +563,7 @@ class SnakeGame():
 
             while gameOver == True:
                 self.direction = 'right'
-                #direction2 = 'left'
+                self.direction2 = 'left'
 
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -518,72 +585,87 @@ class SnakeGame():
                 if event.type == pygame.KEYDOWN:
                     if self.user1:
                         if event.key == pygame.K_LEFT and self.direction != 'right':
-                            lead_x_change =  -self.block_size
-                            lead_y_change = 0
-                            self.direction = 'left'
+                            self.s.sendto("User1:Left:?".encode(),self.server)
+                            self.tLock.acquire()
+                            self.tLock.release()
+                            
                                 
                             
                         elif event.key == pygame.K_RIGHT and self.direction != 'left':
-                            lead_x_change = self.block_size
-                            lead_y_change = 0
-                            self.direction = 'right'
+                            self.s.sendto("User1:Right:?".encode(),self.server)
+                            self.tLock.acquire()
+                            self.tLock.release()
+                            
+                            
                         
                         elif event.key == pygame.K_UP and self.direction !='down':
-                            lead_y_change =  -self.block_size
-                            lead_x_change = 0
-                            self.direction = 'up'
+                            self.s.sendto("User1:Up:?".encode(),self.server)
+                            self.tLock.acquire()
+                            self.tLock.release()
+                            
+                           
                        
                         elif event.key == pygame.K_DOWN and self.direction !='up':
-                            lead_y_change = self.block_size
-                            lead_x_change = 0
-                            self.direction = 'down'
+                            self.s.sendto("User1:Down:?".encode(),self.server)
+                            self.tLock.acquire()
+                            self.tLock.release()
+                            
+                            
                         elif event.key ==  pygame.K_p:
                             self.pause()
                 
                             
                                 
-                    """        
-                    if user2:
-                        if event.key == pygame.K_LEFT and direction2 != 'right':
-                                lead_x2_change =  -block_size
-                                lead_y2_change = 0
-                                direction2 = 'left'
+                           
+                    if self.user2:
+                        if event.key == pygame.K_LEFT and self.direction2 != 'right':
+                                self.s.sendto("User2:Left:?".encode(),self.server)
+                                self.tLock.acquire()
+                                self.tLock.release()
+                                
+                                
                             
-                        elif event.key == pygame.K_RIGHT and direction2 != 'left':
-                            lead_x2_change = block_size
-                            lead_y2_change = 0
-                            direction2 = 'right'
+                        elif event.key == pygame.K_RIGHT and self.direction2 != 'left':
+                            self.s.sendto("User2:Right:?".encode(),self.server)
+                            self.tLock.acquire()
+                            self.tLock.release()
+                            
+                            
                         
-                        elif event.key == pygame.K_UP and direction2 !='down':
-                            lead_y2_change =  -block_size
-                            lead_x2_change = 0
-                            direction2 = 'up'
+                        elif event.key == pygame.K_UP and self.direction2 !='down':
+                            self.s.sendto("User2:Up:?".encode(),self.server)
+                            self.tLock.acquire()
+                            self.tLock.release()
+                            
+                            
                        
-                        elif event.key == pygame.K_DOWN and direction2 !='up':
-                            lead_y2_change = block_size
-                            lead_x2_change = 0
-                            direction2 = 'down'
+                        elif event.key == pygame.K_DOWN and self.direction2 !='up':
+                            self.s.sendto("User2:Down:?".encode(),self.server)
+                            self.tLock.acquire()
+                            self.tLock.release()
+                            
+                            
                         
                         elif event.key ==  pygame.K_p:
                             pause()
-                        """
+                        
                 
                     
             
             
             
             
-            if lead_x >= self.display_width or lead_x < 0 or lead_y >= self.display_height or lead_y < 0:
+            if self.lead_x >= self.display_width or self.lead_x < 0 or self.lead_y >= self.display_height or self.lead_y < 0:
                 gameOver = True
 
-            #if lead_x2 >= self.display_width or lead_x2 < 0 or lead_y2 >= self.display_height or lead_y2 < 0:
-                #gameOver = True
+            if self.lead_x2 >= self.display_width or self.lead_x2 < 0 or self.lead_y2 >= self.display_height or self.lead_y2 < 0:
+                gameOver = True
 
-            lead_x += lead_x_change
-            lead_y += lead_y_change
+            self.lead_x += self.lead_x_change
+            self.lead_y += self.lead_y_change
 
-            #lead_x2 += lead_x2_change
-            #lead_y2 += lead_y2_change
+            self.lead_x2 += self.lead_x2_change
+            self.lead_y2 += self.lead_y2_change
                 
                
                     
@@ -591,39 +673,40 @@ class SnakeGame():
 
             
             #pygame.draw.rect(gameDisplay,red,[randAppleX,randAppleY,AppleThickness,AppleThickness])
-            self.gameDisplay.blit(self.apple,(randAppleX,randAppleY))
+            self.gameDisplay.blit(self.apple,(self.randAppleX,self.randAppleY))
 
             
-            snakeHead = []
-            snakeHead.append(lead_x)
-            snakeHead.append(lead_y)
-            snakeList.append(snakeHead)
+            self.snakeHead = []
+            self.snakeHead.append(self.lead_x)
+            self.snakeHead.append(self.lead_y)
+            self.snakeList.append(self.snakeHead)
 
-            #snakeHead2 = []
-            #snakeHead2.append(lead_x2)
-            #snakeHead2.append(lead_y2)
-            #snakeList2.append(snakeHead2)
+            self.snakeHead2 = []
+            self.snakeHead2.append(self.lead_x2)
+            self.snakeHead2.append(self.lead_y2)
+            self.snakeList2.append(self.snakeHead2)
 
-            if len(snakeList) > snakeLength:
-                del snakeList[0]
+            if len(self.snakeList) > self.snakeLength:
+                del self.snakeList[0]
 
-            #if len(snakeList2) > snakeLength2:
-                #del snakeList2[0]
+            if len(self.snakeList2) > self.snakeLength2:
+                del self.snakeList2[0]
             
-            for eachSegment in snakeList[:-1]:
-                if eachSegment == snakeHead:
+            for eachSegment in self.snakeList[:-1]:
+                if eachSegment == self.snakeHead:
                     gameOver = True
 
-            #for eachSegment in snakeList2[:-1]:
-                #if eachSegment == snakeHead2:
-                    #gameOver = True
+            for eachSegment in self.snakeList2[:-1]:
+                if eachSegment == self.snakeHead2:
+                    gameOver = True
                 
-            self.snake(self.block_size,snakeList,self.direction)
-            #self.snake(block_size,snakeList2,direction2)
+            self.snake(self.block_size,self.snakeList,self.direction)
+            self.snake(self.block_size,self.snakeList2,self.direction2)
+            
             if self.user1:
-                self.score(snakeLength - 1)
-            #if user2:
-                #self.score(snakeLength2 - 1)
+                self.score(self.snakeLength - 1)
+            if self.user2:
+                self.score(self.snakeLength2 - 1)
             self.displayUsername()
 
             
@@ -634,17 +717,17 @@ class SnakeGame():
 
 
 
-            if lead_x > randAppleX and lead_x < randAppleX + self.AppleThickness or lead_x + self.block_size > randAppleX and lead_x + self.block_size < randAppleX + self.AppleThickness:
-                if lead_y > randAppleY and lead_y < randAppleY + self.AppleThickness or lead_y + self.block_size > randAppleY and lead_y + self.block_size < randAppleY + self.AppleThickness:
+            if self.lead_x > self.randAppleX and self.lead_x < self.randAppleX + self.AppleThickness or self.lead_x + self.block_size > self.randAppleX and self.lead_x + self.block_size < self.randAppleX + self.AppleThickness:
+                if self.lead_y > self.randAppleY and self.lead_y < self.randAppleY + self.AppleThickness or self.lead_y + self.block_size > self.randAppleY and self.lead_y + self.block_size < self.randAppleY + self.AppleThickness:
                     self.eatSound.play()
-                    randAppleX,randAppleY = self.randAppleGen()
-                    snakeLength += 1
+                    self.randAppleX,self.randAppleY = self.randAppleGen()
+                    self.snakeLength += 1
 
-            #if lead_x2 > randAppleX and lead_x2 < randAppleX + AppleThickness or lead_x2 + block_size > randAppleX and lead_x2 + block_size < randAppleX + AppleThickness:
-                #if lead_y2 > randAppleY and lead_y2 < randAppleY + AppleThickness or lead_y2 + block_size > randAppleY and lead_y2 + block_size < randAppleY + AppleThickness:
-                    #eatSound.play()
-                    #randAppleX,randAppleY = randAppleGen()
-                    #snakeLength2 += 1
+            if self.lead_x2 > self.randAppleX and self.lead_x2 < self.randAppleX + self.AppleThickness or self.lead_x2 + self.block_size > self.randAppleX and self.lead_x2 + self.block_size < self.randAppleX + self.AppleThickness:
+                if self.lead_y2 > self.randAppleY and self.lead_y2 < self.randAppleY + self.AppleThickness or self.lead_y2 + self.block_size > self.randAppleY and self.lead_y2 + self.block_size < self.randAppleY + self.AppleThickness:
+                    self.eatSound.play()
+                    self.randAppleX,self.randAppleY = self.randAppleGen()
+                    self.snakeLength2 += 1
 
             
                     
