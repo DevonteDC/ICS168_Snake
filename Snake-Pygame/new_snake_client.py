@@ -36,9 +36,9 @@ class SnakeGame():
         self.shutdown = False
 
         self.host = '127.0.0.1'
-        self.port = 10012
+        self.port = 10010
 
-        self.server = ('127.0.0.1',5000)
+        self.server = ('127.0.0.1',20000)
         self.s = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
         self.s.bind((self.host,self.port))
         self.s.setblocking(0)
@@ -107,6 +107,7 @@ class SnakeGame():
                     data, addr = sock.recvfrom(1024)
                     data = data.decode()
                     data = data.split(":")
+                    print("THIS DATA: ",data)
                     if data[0] == "a":
                         print("WE GOT AN A")
                     if data[0] == "play":
@@ -117,8 +118,12 @@ class SnakeGame():
                     if data[0] == "2User":
                         print("I AM USER 2")
                         self.user2 = True
-                    if data[0] == "Pause":
-                        self.pause()
+                        
+                    if data[0] == "RandApple":
+                        print("THIS IS THE DATA {} AND {}".format(data[1],data[2]))
+                        self.randAppleX = int(data[1])
+                        self.randAppleY = int(data[2])
+                    
                     if data[0] == "User1":
                         if data[1] == "Left":
                             self.lead_x_change =  -self.block_size
@@ -154,6 +159,8 @@ class SnakeGame():
                             self.lead_y2_change = self.block_size
                             self.lead_x2_change = 0
                             self.direction2 = 'down'
+                            
+                    
                     
                             
                     
@@ -535,8 +542,11 @@ class SnakeGame():
         self.snakeList2 = []
         self.snakeLength2 = 1
 
-
-        self.randAppleX,self.randAppleY = self.randAppleGen()
+        self.s.sendto("RandApple:{}:{}:{}".format(self.display_width,self.display_height,self.AppleThickness).encode(),self.server)
+        print("INITIATION OF APPLE")
+        self.tLock.acquire()
+        self.tLock.release()
+        #self.randAppleX,self.randAppleY = self.randAppleGen()
         
         
         while gameExit == False:
@@ -609,9 +619,7 @@ class SnakeGame():
                             
                             
                         elif event.key ==  pygame.K_p:
-                            self.s.sendto("Pause:?:?".encode(),self.server)
-                            self.tLock.acquire()
-                            self.tLock.release()
+                            self.pause()
                             
                 
                             
@@ -647,9 +655,7 @@ class SnakeGame():
                             
                         
                         elif event.key ==  pygame.K_p:
-                            self.s.sendto("Pause:?:?".encode(),self.server)
-                            self.tLock.acquire()
-                            self.tLock.release()
+                            self.pause()
                         
                 
                     
@@ -722,13 +728,19 @@ class SnakeGame():
             if self.lead_x > self.randAppleX and self.lead_x < self.randAppleX + self.AppleThickness or self.lead_x + self.block_size > self.randAppleX and self.lead_x + self.block_size < self.randAppleX + self.AppleThickness:
                 if self.lead_y > self.randAppleY and self.lead_y < self.randAppleY + self.AppleThickness or self.lead_y + self.block_size > self.randAppleY and self.lead_y + self.block_size < self.randAppleY + self.AppleThickness:
                     self.eatSound.play()
-                    self.randAppleX,self.randAppleY = self.randAppleGen()
+                    self.s.sendto("RandApple:{}:{}:{}".format(self.display_width,self.display_height,self.AppleThickness).encode(),self.server)
+                    print("COLLISION WITH SNAKE 1")
+                    self.tLock.acquire()
+                    self.tLock.release()
                     self.snakeLength += 1
 
             if self.lead_x2 > self.randAppleX and self.lead_x2 < self.randAppleX + self.AppleThickness or self.lead_x2 + self.block_size > self.randAppleX and self.lead_x2 + self.block_size < self.randAppleX + self.AppleThickness:
                 if self.lead_y2 > self.randAppleY and self.lead_y2 < self.randAppleY + self.AppleThickness or self.lead_y2 + self.block_size > self.randAppleY and self.lead_y2 + self.block_size < self.randAppleY + self.AppleThickness:
                     self.eatSound.play()
-                    self.randAppleX,self.randAppleY = self.randAppleGen()
+                    self.s.sendto("RandApple:{}:{}:{}".format(self.display_width,self.display_height,self.AppleThickness).encode(),self.server)
+                    print("COLLISION WITH SNAKE 2")
+                    self.tLock.acquire()
+                    self.tLock.release()
                     self.snakeLength2 += 1
 
             
