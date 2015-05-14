@@ -117,6 +117,8 @@ class SnakeGame():
                     if data[0] == "2User":
                         print("I AM USER 2")
                         self.user2 = True
+                    if data[0] == "Pause":
+                        self.pause()
                     if data[0] == "User1":
                         if data[1] == "Left":
                             self.lead_x_change =  -self.block_size
@@ -328,12 +330,7 @@ class SnakeGame():
     
 
     def UserPass(self):
-        #global user1
-        #global user2
-        #global username
-        #global cur
-        #global con
-        #global server
+        
         userp = True
         #noStartGame = True
 
@@ -612,7 +609,10 @@ class SnakeGame():
                             
                             
                         elif event.key ==  pygame.K_p:
-                            self.pause()
+                            self.s.sendto("Pause:?:?".encode(),self.server)
+                            self.tLock.acquire()
+                            self.tLock.release()
+                            
                 
                             
                                 
@@ -647,7 +647,9 @@ class SnakeGame():
                             
                         
                         elif event.key ==  pygame.K_p:
-                            pause()
+                            self.s.sendto("Pause:?:?".encode(),self.server)
+                            self.tLock.acquire()
+                            self.tLock.release()
                         
                 
                     
