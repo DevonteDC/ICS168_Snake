@@ -38,6 +38,8 @@ while not quitting:
                 s.sendto("2User:?:?".encode(),addr)
             if num_users == 3:
                 s.sendto("3User:?:?".encode(),addr)
+            if num_users == 4:
+                s.sendto("4User:?:?".encode(),addr)
         if data[0] == "User1":
             if data[1] == "Left":
                 for client in clients:
@@ -77,6 +79,19 @@ while not quitting:
             if data[1] == "Down":
                 for client in clients:
                     s.sendto("User3:Down:?".encode(),client)
+        if data[0] == "User4":
+            if data[1] == "Left":
+                for client in clients:
+                    s.sendto("User4:Left:?".encode(),client)
+            if data[1] == "Right":
+                for client in clients:
+                    s.sendto("User4:Right:?".encode(),client)
+            if data[1] == "Up":
+                for client in clients:
+                    s.sendto("User4:Up:?".encode(),client)
+            if data[1] == "Down":
+                for client in clients:
+                    s.sendto("User4:Down:?".encode(),client)
         if data[0] == "RandApple":
             display_width = int(data[1])
             display_height = int(data[2])
