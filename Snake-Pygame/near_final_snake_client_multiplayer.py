@@ -36,7 +36,7 @@ class SnakeGame():
         self.shutdown = False
 
         self.host = '127.0.0.1'
-        self.port = 10012
+        self.port = 10018
 
         self.server = ('127.0.0.1',20000)
         self.s = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
