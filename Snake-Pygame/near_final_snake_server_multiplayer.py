@@ -11,6 +11,7 @@ s.setblocking(0)
 
 clients = []
 
+
 con = sqlite3.connect('snaketest.db')
 cur = con.cursor()
 cur.execute("CREATE TABLE IF NOT EXISTS Login (Username TEXT, Password TEXT,Highscore TEXT)")
@@ -120,11 +121,14 @@ while not quitting:
             if int(info[2]) < int(data[2]):
                 cur.execute("UPDATE Login SET Highscore = '{}' WHERE Username = '{}'".format(data[2],data[1]))
                 con.commit()
-
+        
         if data[0] == "NumberOfPlayers":
             for client in clients:
                 s.sendto("NumberOfPlayers:{}:?".format(num_users).encode(),client)
-                
+        if data[0] == "Comment":
+            print("THE CLIENTS: ",clients)
+            for client in clients:
+                s.sendto("Comment:{}:?".format(data[1]).encode(),client)
         if data[0] == "RandApple":
             display_width = int(data[1])
             display_height = int(data[2])

@@ -27,16 +27,16 @@ def display_box(screen, message):
   "Print a message in a box in the middle of the screen"
   fontobject = pygame.font.Font(None,18)
   pygame.draw.rect(screen, (255,255,255),
-                   ((screen.get_width() / 2) - 100,
-                    (screen.get_height() / 2) - 10,
-                    200,20), 0)
+                   ((screen.get_width() / 2) - 400,
+                    (screen.get_height() / 2) - 300,
+                    600,20), 0)
   pygame.draw.rect(screen, (0,0,0),
-                   ((screen.get_width() / 2) - 102,
-                    (screen.get_height() / 2) - 12,
-                    204,24), 1)
+                   ((screen.get_width() / 2) - 402,
+                    (screen.get_height() / 2) - 302,
+                    604,24), 1)
   if len(message) != 0:
     screen.blit(fontobject.render(message, 1, (0,0,0)),
-                ((screen.get_width() / 2) - 100, (screen.get_height() / 2) - 10))
+                ((screen.get_width() / 2) - 400, (screen.get_height() / 2) - 300))
   pygame.display.flip()
 
 def ask(screen, question):

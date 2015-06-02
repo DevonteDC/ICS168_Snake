@@ -36,7 +36,7 @@ class SnakeGame():
         self.shutdown = False
 
         self.host = '127.0.0.1'
-        self.port = 10019
+        self.port = 10037
 
         self.server = ('127.0.0.1',20000)
         self.s = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
@@ -56,6 +56,10 @@ class SnakeGame():
         self.name = ""
         self.session = ""
         self.numberOfPlayers = 0
+        self.comment_pos = -100
+        self.comments = dict()
+        self.comment_count = 1
+        self.lobby_names = set()
    
 
         self.gameDisplay = pygame.display.set_mode((self.display_width,self.display_height))
@@ -124,6 +128,7 @@ class SnakeGame():
         self.yellow = (200,200,0)
         self.light_yellow = (255,255,0)
         self.light_blue = (0,0,155)
+        self.blue = (0,0,255)
         self.user1 = False
         self.user2 = False
         self.user3 = False
@@ -140,6 +145,7 @@ class SnakeGame():
         self.show4 = False
         self.gametime = False
         self.invalidtime = False
+        self.lobby = False
         
 
         self.initGraphics()
@@ -154,7 +160,7 @@ class SnakeGame():
                     data, addr = sock.recvfrom(1024)
                     data = data.decode()
                     data = data.split(":")
-                    #print("THIS DATA: ",data)
+                    print("THIS DATA: ",data)
                     if data[0] == "play":
                         pass
                         #print("We Are Playing")
@@ -170,6 +176,27 @@ class SnakeGame():
                     if data[0] == "4score":
                         self.user4score += 1
                         self.score(int(data[1]),"user4")
+                    if data[0] == "Comment" and self.lobby == True:
+                        self.gameDisplay.blit(self.background,(0,0))
+                        self.message_to_screen("Type exit or EXIT to return to waiting room",self.black,-200)
+                        self.message_to_screen("IN LOBBY: " + str(self.lobby_names),self.red,-250)
+                        if len(self.comments) == 10:
+                            self.comments.clear()
+                            self.comment_pos = -100
+                        self.comments[data[1]] = self.comment_pos
+                        print(self.comments)
+                        for i in self.comments:
+                            self.lobby_names.add(i.split("->")[0])
+                            if len(i) > 55:
+                                a = i[:55]
+                                b = i[55:]
+                                self.message_to_screen(a,self.black,self.comments[i])
+                                self.message_to_screen(b,self.black,self.comments[i] + 20)
+                            else:
+                                self.message_to_screen(i,self.black,self.comments[i])
+                        self.comment_pos += 20
+                        pygame.display.update()
+                    
 
                     if data[0] == "GameName":
                         if data[1] == "user1":
@@ -471,6 +498,9 @@ class SnakeGame():
 
                 if action == 'Join':
                     self.joinSession()
+
+                if action == 'Lobby':
+                    self.joinSession()
                     
                     
 
@@ -584,9 +614,23 @@ class SnakeGame():
             self.clock.tick(15)
 
     def joinSession(self):
+        if self.user1:
+            self.lobbyname = self.username
+          
+        if self.user2:
+            self.lobbyname = self.username2
+            
+        if self.user3:
+            self.lobbyname = self.username3
+            
+        if self.user4:
+            self.lobbyname = self.username4
+           
         
         joins = True
+        self.lobby = True
         #noStartGame = True
+        self.gameDisplay.blit(self.background,(0,0))
 
         while joins:
             for event in pygame.event.get():
@@ -598,13 +642,16 @@ class SnakeGame():
                 
 
             
-            self.gameDisplay.blit(self.background,(0,0))
+            
 
             
           
             ##SERVER LOGIN##
-            self.session = inputbox.ask(self.gameDisplay,"Session Name")
-            self.s.sendto("User:?:?".encode(),self.server)
+            self.session = inputbox.ask(self.gameDisplay,"Comment")
+            if self.session.upper() == "EXIT":
+                self.lobby = False
+                self.waitingRoom()
+            self.s.sendto("Comment:{}->{}:?".format(self.lobbyname,self.session).encode(),self.server)
             self.tLock.acquire()
             self.tLock.release()
             time.sleep(0.2)
@@ -613,7 +660,7 @@ class SnakeGame():
             
             
            
-            self.waitingRoom()
+            
             
                     
                 
@@ -709,7 +756,7 @@ class SnakeGame():
         
         
 
-        
+        self.gameDisplay.blit(self.background,(0,0))
         while waiting:
             
             
@@ -726,8 +773,8 @@ class SnakeGame():
                         pygame.quit()
                         quit()
                 
-
-            self.gameDisplay.blit(self.background,(0,0))
+            
+            
 
            
                  
@@ -737,6 +784,7 @@ class SnakeGame():
                 
                 #pygame.display.update()
             self.button("Ready",150,500,100,50,self.red,self.light_red,action = "Begin")
+            self.button("Lobby",350,500,100,50,self.blue,self.light_blue,action = "Lobby")
             
             
             pygame.display.update()
@@ -814,7 +862,7 @@ class SnakeGame():
         
         
         while gameExit == False:
-        
+            
 
             
 
@@ -1015,6 +1063,7 @@ class SnakeGame():
 
             self.lead_x += self.lead_x_change
             self.lead_y += self.lead_y_change
+            
 
             self.lead_x2 += self.lead_x2_change
             self.lead_y2 += self.lead_y2_change
@@ -1038,6 +1087,8 @@ class SnakeGame():
             self.snakeHead.append(self.lead_x)
             self.snakeHead.append(self.lead_y)
             self.snakeList.append(self.snakeHead)
+
+            
 
             self.snakeHead2 = []
             self.snakeHead2.append(self.lead_x2)
