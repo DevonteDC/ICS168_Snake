@@ -36,7 +36,7 @@ class SnakeGame():
         self.shutdown = False
 
         self.host = '127.0.0.1'
-        self.port = 10018
+        self.port = 10019
 
         self.server = ('127.0.0.1',20000)
         self.s = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
@@ -129,6 +129,7 @@ class SnakeGame():
         self.user3 = False
         self.user4 = False
         self.do_pause = False
+        self.paused = False
         self.user1score = 0
         self.user2score = 0
         self.user3score = 0
@@ -137,6 +138,9 @@ class SnakeGame():
         self.show2 = False
         self.show3 = False
         self.show4 = False
+        self.gametime = False
+        self.invalidtime = False
+        
 
         self.initGraphics()
 
@@ -166,10 +170,27 @@ class SnakeGame():
                     if data[0] == "4score":
                         self.user4score += 1
                         self.score(int(data[1]),"user4")
+
+                    if data[0] == "GameName":
+                        if data[1] == "user1":
+                            self.username = data[2]
+                        if data[1] == "user2":
+                            self.username2 = data[2]
+                        if data[1] == "user3":
+                            self.username3 = data[2]
+                        if data[1] == "user4":
+                            self.username4 = data[2]
                     if data[0] == "Pause":
                         self.do_pause = True
+
+                    if data[0] == "Gameloop":
+                        self.s.sendto("User:?:?".encode(),self.server)
+                        self.s.sendto("NumberOfPlayers:?:?".encode(),self.server)
+                        self.gametime = True
+                    if data[0] == "Invalidpass":
+                        self.invalidtime = True
                     if data[0] == "NumberOfPlayers":
-                        self.numberOfPlayers += 1
+                        self.numberOfPlayers = int(data[1])
                         if self.numberOfPlayers == 1:
                             self.show1 = True
                         if self.numberOfPlayers == 2:
@@ -184,28 +205,36 @@ class SnakeGame():
                             self.show2 = True
                             self.show3 = True
                             self.show4 = True
+                            
+                    if data[0] == "DonePause":
+                        self.do_pause = False
+                        self.paused = False
                     if data[0] == "1Quit":
                         self.show1 = False
-                    if data[0] == "2Quit":
+                    if data[0] == "2Quit": 
                         self.show2 = False
                     if data[0] == "3Quit":
                         self.show3 = False
                     if data[0] == "4Quit":
-                        self.show4 == False
+                        self.show4 = False
                         
         
                     if data[0] == "1User":
                         #print("I AM USER 1")
                         self.user1 = True
+                        self.username = self.name
                     if data[0] == "2User":
                         #print("I AM USER 2")
                         self.user2 = True
+                        self.username2 = self.name
                     if data[0] == "3User":
                         #print("I AM USER 3")
                         self.user3 = True
+                        self.username3 = self.name
                     if data[0] == "4User":
                         #print("I AM USER 4")
                         self.user4 = True
+                        self.username4 = self.name
                         
                     if data[0] == "RandApple":
                         #print("THIS IS THE DATA {} AND {}".format(data[1],data[2]))
@@ -294,7 +323,7 @@ class SnakeGame():
                 self.tLock.release()
                 
     def pause(self):
-        paused = True
+        self.paused = True
         self.message_to_screen("Paused",
                           self.black,
                           -100,
@@ -306,7 +335,7 @@ class SnakeGame():
 
         pygame.display.update()
 
-        while paused:
+        while self.paused:
         
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -314,7 +343,8 @@ class SnakeGame():
                     quit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_c:
-                        paused = False
+                        self.s.sendto("DonePause:?:?".encode(),self.server)
+                        self.paused = False
                     elif event.key == pygame.K_q:
                         pygame.quit()
                         quit()
@@ -429,6 +459,14 @@ class SnakeGame():
                     self.UserPass()
 
                 if action == 'Begin':
+                    if self.user1:
+                        self.s.sendto("GameName:user1:{}".format(self.username).encode(),self.server)
+                    if self.user2:
+                        self.s.sendto("GameName:user2:{}".format(self.username2).encode(),self.server)
+                    if self.user3:
+                        self.s.sendto("GameName:user3:{}".format(self.username3).encode(),self.server)
+                    if self.user4:
+                        self.s.sendto("GameName:user4:{}".format(self.username4).encode(),self.server)
                     self.gameLoop()
 
                 if action == 'Join':
@@ -448,6 +486,7 @@ class SnakeGame():
         self.text_to_button(text,self.black,x,y,width,height)
 
     def InvalidPass(self):
+        self.invalidtime = False
         ipass = True
 
         while ipass:
@@ -476,7 +515,7 @@ class SnakeGame():
     def UserPass(self):
         
         userp = True
-        #noStartGame = True
+        noStartGame = True
 
         while userp:
             for event in pygame.event.get():
@@ -501,8 +540,8 @@ class SnakeGame():
             self.name = inputbox.ask(self.gameDisplay,"UserName")
             password = inputbox.ask(self.gameDisplay,"Password")
 
-            self.s.sendto("User:?:?".encode(),self.server)
-            self.s.sendto("NumberOfPlayers:?:?".encode(),self.server)
+            #self.s.sendto("User:?:?".encode(),self.server)
+            #self.s.sendto("NumberOfPlayers:?:?".encode(),self.server)
 
             
             
@@ -514,35 +553,21 @@ class SnakeGame():
             #rt.join()
             #self.s.close()
             
-            self.waitingRoom()
-            """
+            
             password = hashlib.md5(password.encode()).hexdigest()
-            print("PASSWORD BEFORE SENDING: ",password," TYPE: ",type(password))
-            s.sendto("Login:{}:{}".format(username,password).encode(),server)
+            #print("PASSWORD BEFORE SENDING: ",password," TYPE: ",type(password))
+            self.s.sendto("Login:{}:{}".format(self.name,password).encode(),self.server)
             while noStartGame == True:
-                data, addr = s.recvfrom(1024)
-                data = data.decode()
-                data = data.split(":")
-                if data[0] == "Gameloop":
-                    s.sendto("User:?:?".encode(),server)
-                    data, addr = s.recvfrom(1024)
-                    data = data.decode()
-                    data = data.split(":")
-                    if data[0] == "User1":
-                        print("USER!!!")
-                        user1 = True
-                        waitingRoom()
-                    if data[0] == "User2":
-                        user2 = True
-                        waitingRoom()
+                if self.gametime == True:
+                    self.waitingRoom()
+                if self.invalidtime == True:
+                    self.InvalidPass()
                 
-                if data[0] == "Invalidpass":
-                    InvalidPass()
                 
                 
                     
             ##SERVER LOGIN##
-            """
+            
                     
                     
                 
@@ -789,7 +814,7 @@ class SnakeGame():
         
         
         while gameExit == False:
-            
+        
 
             
 
@@ -820,8 +845,7 @@ class SnakeGame():
                         if event.key == pygame.K_q:
                             gameExit = True
                             gameOver = False
-                        elif event.key == pygame.K_c:
-                            self.gameLoop()
+                        
                             
             for event in pygame.event.get():
                 if self.do_pause:
@@ -898,7 +922,7 @@ class SnakeGame():
                             
                         
                         elif event.key ==  pygame.K_p:
-                            self.pause()
+                            self.s.sendto("Pause:?:?".encode(),self.server)
 
                     if self.user3:
                         if event.key == pygame.K_LEFT and self.direction3 != 'right':
@@ -969,15 +993,24 @@ class SnakeGame():
             
             
             if self.lead_x >= self.display_width or self.lead_x < 0 or self.lead_y >= self.display_height or self.lead_y < 0:
+                self.show1 = False
+                print("MY USERNAME!!! ",self.username)
+                self.s.sendto("Score:{}:{}".format(self.username,self.user1score).encode(),self.server)
                 gameOver = True
 
             if self.lead_x2 >= self.display_width or self.lead_x2 < 0 or self.lead_y2 >= self.display_height or self.lead_y2 < 0:
+                self.show2 = False
+                self.s.sendto("Score:{}:{}".format(self.username2,self.user2score).encode(),self.server)
                 gameOver = True
 
             if self.lead_x3 >= self.display_width or self.lead_x3 < 0 or self.lead_y3 >= self.display_height or self.lead_y3 < 0:
+                self.show3 = False
+                self.s.sendto("Score:{}:{}".format(self.username3,self.user3score).encode(),self.server)
                 gameOver = True
 
             if self.lead_x4 >= self.display_width or self.lead_x4 < 0 or self.lead_y4 >= self.display_height or self.lead_y4 < 0:
+                self.show4 = False
+                self.s.sendto("Score:{}:{}".format(self.username4,self.user4score).encode(),self.server)
                 gameOver = True
 
             self.lead_x += self.lead_x_change
@@ -1049,19 +1082,26 @@ class SnakeGame():
                 if eachSegment == self.snakeHead4:
                     gameOver = True
 
-            if self.numberOfPlayers == 2:
-                self.show2 == True
+        
 
             if self.show1:
                 self.snake(self.block_size,self.snakeList,self.direction)
+                self.score(self.user1score,"user1")
+                self.displayUsername(self.username,0,25)
             if self.show2:
                 self.snake(self.block_size,self.snakeList2,self.direction2)
+                self.score(self.user2score,"user2")
+                self.displayUsername(self.username2,200,25)
             if self.show3:
                 self.snake(self.block_size,self.snakeList3,self.direction3)
+                self.score(self.user3score,"user3")
+                self.displayUsername(self.username3,400,25)
             if self.show4:
                 self.snake(self.block_size,self.snakeList4,self.direction4)
+                self.score(self.user4score,"user4")
+                self.displayUsername(self.username4,600,25)
             
-            if self.user1:
+            """if self.user1:
                 self.score(self.user1score,"user1")
                 self.score(self.user2score,"user2")
                 self.score(self.user3score,"user3")
@@ -1080,11 +1120,11 @@ class SnakeGame():
                 self.score(self.user4score,"user4")
                 self.score(self.user1score,"user1")
                 self.score(self.user2score,"user2")
-                self.score(self.user3score,"user3")
+                self.score(self.user3score,"user3") 
             self.displayUsername(self.username,0,25)
             self.displayUsername(self.username2,200,25)
             self.displayUsername(self.username3,400,25)
-            self.displayUsername(self.username4,600,25)
+            self.displayUsername(self.username4,600,25) """
            
 
             
@@ -1113,7 +1153,7 @@ class SnakeGame():
                     self.tLock.acquire()
                     self.tLock.release()
                     self.snakeLength2 += 1
-                    self.s.sendto("2score:{}:?".format(self.snakeLength - 1).encode(),self.server)
+                    self.s.sendto("2score:{}:?".format(self.snakeLength2 - 1).encode(),self.server)
 
             if self.lead_x3 > self.randAppleX and self.lead_x3 < self.randAppleX + self.AppleThickness or self.lead_x3 + self.block_size > self.randAppleX and self.lead_x3 + self.block_size < self.randAppleX + self.AppleThickness:
                 if self.lead_y3 > self.randAppleY and self.lead_y3 < self.randAppleY + self.AppleThickness or self.lead_y3 + self.block_size > self.randAppleY and self.lead_y3 + self.block_size < self.randAppleY + self.AppleThickness:
@@ -1123,7 +1163,7 @@ class SnakeGame():
                     self.tLock.acquire()
                     self.tLock.release()
                     self.snakeLength3 += 1
-                    self.s.sendto("3score:{}:?".format(self.snakeLength - 1).encode(),self.server)
+                    self.s.sendto("3score:{}:?".format(self.snakeLength3 - 1).encode(),self.server)
 
             if self.lead_x4 > self.randAppleX and self.lead_x4 < self.randAppleX + self.AppleThickness or self.lead_x4 + self.block_size > self.randAppleX and self.lead_x4 + self.block_size < self.randAppleX + self.AppleThickness:
                 if self.lead_y4 > self.randAppleY and self.lead_y4 < self.randAppleY + self.AppleThickness or self.lead_y4 + self.block_size > self.randAppleY and self.lead_y4 + self.block_size < self.randAppleY + self.AppleThickness:
@@ -1133,7 +1173,7 @@ class SnakeGame():
                     self.tLock.acquire()
                     self.tLock.release()
                     self.snakeLength4 += 1
-                    self.s.sendto("4score:{}:?".format(self.snakeLength - 1).encode(),self.server)
+                    self.s.sendto("4score:{}:?".format(self.snakeLength4 - 1).encode(),self.server)
 
 
             
