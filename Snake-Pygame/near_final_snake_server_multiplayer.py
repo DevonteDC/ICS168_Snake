@@ -115,6 +115,14 @@ while not quitting:
             if data[1] == "Down":
                 for client in clients:
                     s.sendto("User4:Down:?".encode(),client)
+        if data[0] == "1GameOver":
+            s.sendto("1GameOver::".encode(),addr)
+        if data[0] == "2GameOver":
+            s.sendto("2GameOver::".encode(),addr)
+        if data[0] == "3GameOver":
+            s.sendto("3GameOver::".encode(),addr)
+        if data[0] == "4GameOver":
+            s.sendto("4GameOver::".encode(),addr)
         if data[0] == "Score":
             cur.execute("SELECT * FROM Login WHERE Username = '{}'".format(data[1]))
             info = cur.fetchone()
@@ -126,7 +134,7 @@ while not quitting:
             for client in clients:
                 s.sendto("NumberOfPlayers:{}:?".format(num_users).encode(),client)
         if data[0] == "Comment":
-            print("THE CLIENTS: ",clients)
+            #print("THE CLIENTS: ",clients)
             for client in clients:
                 s.sendto("Comment:{}:?".format(data[1]).encode(),client)
         if data[0] == "RandApple":

@@ -36,7 +36,7 @@ class SnakeGame():
         self.shutdown = False
 
         self.host = '127.0.0.1'
-        self.port = 10037
+        self.port = 10008
 
         self.server = ('127.0.0.1',20000)
         self.s = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
@@ -146,6 +146,7 @@ class SnakeGame():
         self.gametime = False
         self.invalidtime = False
         self.lobby = False
+        self.gameOver = False
         
 
         self.initGraphics()
@@ -160,7 +161,7 @@ class SnakeGame():
                     data, addr = sock.recvfrom(1024)
                     data = data.decode()
                     data = data.split(":")
-                    print("THIS DATA: ",data)
+                    #print("THIS DATA: ",data)
                     if data[0] == "play":
                         pass
                         #print("We Are Playing")
@@ -176,6 +177,14 @@ class SnakeGame():
                     if data[0] == "4score":
                         self.user4score += 1
                         self.score(int(data[1]),"user4")
+                    if data[0] == "1GameOver" and self.user1:
+                        self.gameOver = True
+                    if data[0] == "2GameOver" and self.user2:
+                        self.gameOver = True
+                    if data[0] == "3GameOver" and self.user3:
+                        self.gameOver = True
+                    if data[0] == "4GameOver" and self.user4:
+                        self.gameOver = True
                     if data[0] == "Comment" and self.lobby == True:
                         self.gameDisplay.blit(self.background,(0,0))
                         self.message_to_screen("Type exit or EXIT to return to waiting room",self.black,-200)
@@ -800,7 +809,7 @@ class SnakeGame():
 
         
         gameExit = False
-        gameOver = False
+        self.gameOver = False
         self.lead_x = 100
         self.lead_y = 100
 
@@ -866,7 +875,7 @@ class SnakeGame():
 
             
 
-            if gameOver == True:
+            if self.gameOver == True:
                 self.message_to_screen("Game over",
                                   self.red,
                                   -50,
@@ -879,7 +888,7 @@ class SnakeGame():
                 pygame.display.update()
                 
 
-            while gameOver == True:
+            while self.gameOver == True:
                 self.direction = 'right'
                 self.direction2 = 'left'
                 self.direction3 = 'right'
@@ -888,11 +897,11 @@ class SnakeGame():
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         gameExit = True
-                        gameOver = False
+                        self.gameOver = False
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_q:
                             gameExit = True
-                            gameOver = False
+                            self.gameOver = False
                         
                             
             for event in pygame.event.get():
@@ -1044,22 +1053,26 @@ class SnakeGame():
                 self.show1 = False
                 print("MY USERNAME!!! ",self.username)
                 self.s.sendto("Score:{}:{}".format(self.username,self.user1score).encode(),self.server)
-                gameOver = True
+                #self.gameOver = True
+                self.s.sendto("1GameOver::".encode(),self.server)
 
             if self.lead_x2 >= self.display_width or self.lead_x2 < 0 or self.lead_y2 >= self.display_height or self.lead_y2 < 0:
                 self.show2 = False
                 self.s.sendto("Score:{}:{}".format(self.username2,self.user2score).encode(),self.server)
-                gameOver = True
+                #self.gameOver = True
+                self.s.sendto("2GameOver::".encode(),self.server)
 
             if self.lead_x3 >= self.display_width or self.lead_x3 < 0 or self.lead_y3 >= self.display_height or self.lead_y3 < 0:
                 self.show3 = False
                 self.s.sendto("Score:{}:{}".format(self.username3,self.user3score).encode(),self.server)
-                gameOver = True
+                #self.gameOver = True
+                self.s.sendto("3GameOver::".encode(),self.server)
 
             if self.lead_x4 >= self.display_width or self.lead_x4 < 0 or self.lead_y4 >= self.display_height or self.lead_y4 < 0:
                 self.show4 = False
                 self.s.sendto("Score:{}:{}".format(self.username4,self.user4score).encode(),self.server)
-                gameOver = True
+                #self.gameOver = True
+                self.s.sendto("4GameOver::".encode(),self.server)
 
             self.lead_x += self.lead_x_change
             self.lead_y += self.lead_y_change
@@ -1119,19 +1132,19 @@ class SnakeGame():
             
             for eachSegment in self.snakeList[:-1]:
                 if eachSegment == self.snakeHead:
-                    gameOver = True
+                    self.gameOver = True
 
             for eachSegment in self.snakeList2[:-1]:
                 if eachSegment == self.snakeHead2:
-                    gameOver = True
+                    self.gameOver = True
 
             for eachSegment in self.snakeList3[:-1]:
                 if eachSegment == self.snakeHead3:
-                    gameOver = True
+                    self.gameOver = True
 
             for eachSegment in self.snakeList4[:-1]:
                 if eachSegment == self.snakeHead4:
-                    gameOver = True
+                    self.gameOver = True
 
         
 

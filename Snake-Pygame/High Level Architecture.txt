@@ -1,0 +1,281 @@
+ARCHITECTURE
+
+NETWORK MESSAGES
+
+SERVERS SENDS ->
+	"Gameloop:?:?" -- lets the user begin the game aka allows client 
+					  to run gameloop function
+	
+	"Invalidpass:?:?" -- tells the client that the password entered was invalid and
+						 must try again. Client gets sent to InvalidPass function
+						 
+	"1User:?:?"  -- tells the client that they are Player 1
+	"2User:?:?"  -- tells the client that they are Player 2
+	"3User:?:?"  -- tells the client that they are Player 3
+	"4User:?:?"  -- tells the client that they are Player 4
+	
+	"User1:Left:?" -- tells all the clients that Player 1 is moving left
+	"User1:Right:?" --  tells all the clients that Player 1 is moving right
+	"User1:Down:?" -- tells all the clients that Player 1 is moving down
+	"User1:Up:?" -- tells all the clients that Player 1 is moving up
+	"User2:Left:?" -- tells all the clients that Player 2 is moving left
+	"User2:Right:?" -- tells all the clients that Player 2 is moving right
+	"User2:Down:?" -- tells all the clients that Player 2 is moving down
+	"User2:Up:?" -- tells all the clients that Player 2 is moving up
+	"User3:Left:?" -- tells all the clients that Player 3 is moving left
+	"User3:Right:?" -- tells all the clients that Player 3 is moving right
+	"User3:Down:?" -- tells all the clients that Player 3 is moving down
+	"User3:Up:?" -- tells all the clients that Player 3 is moving up
+	"User4:Left:?" -- tells all the clients that Player 4 is moving left
+	"User4:Right:?" -- tells all the clients that Player 4 is moving right
+	"User4:Down:?" -- tells all the clients that Player 4 is moving down
+	"User4:Up:?" -- tells all the clients that Player 4 is moving up
+	 
+	"1GameOver::" -- tells the client that Player 1 has reached a game over state to allow the client that is Player1 to display GameOver on their screen
+	"2GameOver::" -- tells the client that Player 2 has reached a game over state to allow the client that is Player2 to display GameOver on their screen
+	"3GameOver::" -- tells the client that Player 3 has reached a game over state to allow the client that is Player3 to display GameOver on their screen
+	"4GameOver::" -- tells the client that Player 4 has reached a game over state to allow the client that is Player4 to display GameOver on their screen
+	
+	"NumberOfPlayers:{number of users}:?" -- tells all the clients how many players are in
+											 the game
+											 
+	"Comment:{the comment}:?" -- tells all the clients about a comment that came in from
+								 other clients and then sends all clients that comment.
+								 
+	"RandApple:{apple's random x position}:{apple's random y position}" --
+								tells all the clients the new position of the apple
+								after generating random x,y locations.
+	"{}:{}:{}" -- feeds back any messages to all clients that come from any client 
+	
+	
+CLIENT SENDS ->
+	"User:?:?" -- Tells the server to initialize a new user into the system
+	
+	"NumberOfPlayers:?:?" -- Asks the server to tell the client how many players are in the game
+	
+	"DonePause:?:?" --  Tells the server that the client is done pausing the screen
+	"play:?:?" -- Unimportant message that echoes back to client to state that the client 
+	              clicked the play button 
+				  
+	"GameName:user1:{player 1's username}" -- echoes back to the client player 1's username
+	"GameName:user2:{player 2's username}" -- echoes back to the client player 2's username
+	"GameName:user3:{player 3's username}" -- echoes back to the client player 3's username
+	"GameName:user4:{player 4's username}" -- echoes back to the client player 4's username
+	
+	"Login:{username}:{password}" -- sends the server the user's username and hashed password
+									 for login verification or new user registration
+									 
+	"Comment:{username}->{comment}:?" -- sends the server the user's username and comment
+										 related to the chat lobby
+										 
+	"RandApple:{display width}:{display height}:{Apple Thickness}" -- sends information
+										about the apples thickness, and the height and width of the
+										display window so that the server can generate a random
+										apple position based on these details.
+										
+	"User1:Left:?" -- Tells the server that User1 wants to move left
+	"User1:Right:?" -- Tells the server that User1 wants to move right
+	"User1:Down:?" -- Tells the server that User1 wants to move down
+	"User1:Up:?" -- Tells the server that User1 wants to move up
+	"User2:Left:?" -- Tells the server that User2 wants to move left
+	"User2:Right:?" -- Tells the server that User2 wants to move right
+	"User2:Down:?" -- Tells the server that User2 wants to move down
+	"User2:Up:?" -- Tells the server that User2 wants to move up
+	"User3:Left:?" -- Tells the server that User3 wants to move left
+	"User3:Right:?" -- Tells the server that User3 wants to move right
+	"User3:Down:?" -- Tells the server that User 3 wants to move down
+	"User3:Up:?" -- Tells the server that User3 wants to move up
+	"User4:Left:?" -- Tells the server that User4 wants to move left
+	"User4:Right:?" -- Tells the server that User4 wants to move right
+	"User4:Down:?" -- Tells the server that User4 wants to move down
+	"User4:Up:?" -- Tells the server that User4 wants to move up
+	
+	"1GameOver::" -- tells the server that Player 1 has reached a game over state
+	"2GameOver::" -- tells the server that Player 2 has reached a game over state
+	"3GameOver::" -- tells the server that Player 3 has reached a game over state
+	"4GameOver::" -- tells the server that Player 4 has reached a game over state
+	
+	"Pause:?:?" -- Tells the server that the User wants to pause the screen
+	
+	"Score:{username}:{user's score}" -- Sends the user's score to the server so the server can
+										save it to the database
+										
+	"1score:{player 1's score}:?" -- Echoes to the client Player 1's score
+	"2score:{player 2's score}:?" -- Echoes to the client Player 2's score
+	"3score:{player 3's score}:?" -- Echoes to the client Player 3's score
+	"4score:{player 4's score}:?" -- Echoes to the client Player 4's score
+	
+	"1Quit:?:?" --  Echoes to the client that Player 1 has disconnected
+	"2Quit:?:?" -- Echoes to the client that Player 2 has disconnected
+	"3Quit:?:?" -- Echoes to the client that Player 3 has disconnected
+	"4Quit:?:?" -- Echoes to the client that Player 4 has disconnected
+	
+	
+
+
+SCRIPTS:
+	inputbox.py -- Used to create an input box functionality for grabbing 
+					usernames, passwords, and comments in the chat lobby
+					
+	ipgetter.py --  Used to dynamically grab the computer's public IP address
+					(not actually used in the code, was testing it out)
+					
+	near_final_snake_client_multiplayer.py -- The 'final' client side of the game
+	
+	near_final_snake_server_multiplayer.py -- The 'final' server side of the game
+	
+	new_snake_client-Multiplayer.py -- The older, reformed client side of the game
+										(Unnecessary)
+	new_snake_server-Multiplayer.py -- The older, reformed server side of the game
+										(Unnecessary)
+										
+	snake_client - 1player.py -- The single player game version of the client side
+	snake_server - 1player.py -- The single player game version of the server side
+	
+	snake_database.py -- Used to read, delete, and edit the snake database.
+
+RESOURCES:
+	apple.png -- picture of a red apple
+	eat.wav  -- sound used when a snake eats an apple
+	pac.wav  --  the title screen theme music
+	snake_art.png  --  The snake art in the background of the title screen
+	SnakeBackground.png -- The background color of the title screen
+	snakehead.png  -- the drawn image of the snake head
+	SnakeTitle.png -- The title image of the word "Snake" on the title screen
+	snaketest.db  --  The database file for the server
+	README_INSTRUCTIONS.txt  -- The readme file for running the game(server and client)
+	Learning Resources folder -- folder full of resources used to help learn
+								how to code up alot of networking/game related problems
+	
+FUNCTIONS:
+
+SERVER SIDE HAS NO CREATED FUNCTIONS/CLASSES. IT JUST HANDLES MESSAGES
+AND ESTABLISHES THE SERVER AND CONNECTIONS
+
+CLIENT SIDE ->
+	class SnakeGame() -> This class holds everything. It is an intialization of 
+						a game instance. This object runs by starting it with
+						SnakeGame().game_intro()
+						
+	def initGraphics(self) -> This function loads in the graphics, the sounds/music, and the 
+								icon.
+	def __init__(self) -> Initializes pygame. Sets up the threading and locks. Creates 
+						 a host number and a port number. Creates a socket and binds the
+						socket to the host and port. Creates the window display for pygame.
+						Initializes all the variables used in this script. Sets up the gamedisplay.
+						Creates a pygame clock to handle time,FPS,etc. Displays Snake 168 caption.
+						Creates variables related to fonts and colors. Runs the InitGraphics function.
+						
+			 
+	def receiving(self,name,sock) -> This function constantly listens for messages being sent
+									from the server. Based on the messages it receives, it carries out
+									various lines of code that determine game states, handle player movement
+									across other clients, handle lobby comments, and initialization of users.
+									
+									
+	def pause(self) -> This function handles pausing the screen for the user. It displays a "Paused" message
+					   and tells the user how to exit the screen or continue.
+					   
+	def score(self,score,user_score) -> This function handles displaying the scores of each 
+										user that is in the game. score is the integer value, user_score
+										is a string- the type of user (user1 or user2 or user 3 or user4).
+										
+	def displayUsername(self,user,x,y) -> This  displays the users username on the screen. Depending on what user
+											is given in input. user is a string of their username.
+											x and y are the coordinates where the username will be displayed
+											on the screen.
+	def randAppleGen(self) -> Creates two variables and stores a random x and y position in each respectively. 
+								It then returns those two variables.
+								
+	def text_objects(self,text,color,size)-> Defines three different sizes for texts. Allows other functions 
+											to create text of different colors and sizes. Useful for putting
+											a message to the screen and useful for putting text on a button.
+											The sizes are "small" "medium" and "large"
+	
+	def text_to_button(self,msg,color,buttonx,buttony,buttonwidth,buttonheight,size)->
+										Takes a given text (msg) and applies it to a button so that the text
+										and the button are one object as a whole. buttonx and buttony is the location 
+										of the buttons top-left corner. The buttonwidth and buttonheight define its size.
+										size defines the texts size.
+										
+	def message_to_screen(self,msg,color,y_displace,size) -> Takes a given text(msg) and displays it on the middle
+														of the screen. color defines its color. y_displace allows
+														you to move its y position. size is the size of the text.
+														
+	def game_controls(self)-> This is connected to a button called "Controls" and takes the user to a different
+							screen. This screen shows the User information about the controls and how the game
+							is played.
+		
+	def button(self,text,x,y,width,height,inactive_color,active_color,action) -> This creates a button
+									with the given text, x y position, width and height of button. Color 
+									of the button when pressed and when not pressed. The action that is 
+									connected to the button such as "Play" to play the game or "Lobby"
+									to send player to the lobby chat room.
+									
+	def InvalidPass(self) -> This function sends the user to a screen that says "Invalid password".
+							It then displays a redo button which has an action tagged to it called "Redo" 
+							which sends the user back to the previous screen where they can input their
+							username and password again.
+		
+	def UserPass(self) -> Takes the user to another another screen where they input their username and
+						password into the system. If their password matches they get sent to the waiting room 
+						via self.waitingRoom(). If password fails they are sent to self.InvalidPass() where they
+						have to re enter their information.
+						
+	def joinSession(self) ->This is connected to a lobby button that takes the user to another screen where
+						they can chat with other users inside that lobby. It asks the users for their comments
+						via an inputbox and then sends those comments to the server so that the server can echo
+						them to all clients.
+					
+	def snake(self,block_size,snakeList,direc) -> Creates a new snake object with the given initial direction,
+												and block size of the snake. The snakeList contains positions
+												of the snakes other body parts. This function gets called constantly
+												inside of gameLoop() so that as the snakeList changes, it visually changes
+												the snake so that it builds its body via apple eating.
+	
+	def game_intro(self) -> Take the user to a beginning scene and plays the theme music for the game. It displays buttons for Play, Controls, Quit, Join.
+							Play button takes the player into the game. Controls shows the player the way to play the game. Quit exits the game instance. Join was
+							a test for creating game sessions but was not fully implemented and is a failure.
+							
+	def waitingRoom(self) -> waitingRoom() is also another screen/scene where the player is supplied with a button that says "Ready" and a button that says "Lobby".
+							Here they can choose to start the game by clicking ready, or go into the chatroom by clicking Lobby. 
+	def gameLoop(self) -> This is the meat of the program. It handles everything that goes on during the gameplay. Snake movement, apple position, scores, game overs, collisions etc.
+							It handles the flow of the game and sends messages back and forth to the server about the gamestate. GameLoops uses the score and snake functions to
+							supply the gameplay with those functionalities. It also runs the displayUsername() function inside of it. It handles the disconnections with players
+							and determination of which player is which during their gameplay.
+	
+SYSTEM REQUIREMENTS:
+	Python 3 
+	Pygame 1.9.2 win32- python 3.3
+	Sqlite win32 x86 to run the database if needed
+	ipgetter-master -> grab IP address dynamically (not needed since hardcoded ips)
+	
+QUICK START:
+   Run near_final_snake_server.py
+   Open one,two,three, or four near_final_snake_client.py
+   Change the port on one or more of the clients if you open two or more
+   Press play and type in a username and password for each
+   Do not click ready until everyone is at the ready screen(BAD)
+   Can choose to click ready or click Lobby to chat with other players
+   If lobby: type 'exit' to leave the lobby
+   In Game: press 'P' to pause game
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+	
+	
+
